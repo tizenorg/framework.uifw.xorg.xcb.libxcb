@@ -1,0 +1,5 @@
+usr/include/xcb/res.h
+usr/lib/libxcb-res.a
+usr/lib/libxcb-res.so
+usr/lib/libxcb-res.la
+usr/lib/pkgconfig/xcb-res.pc

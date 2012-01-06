@@ -1,0 +1,5 @@
+usr/include/xcb/xinerama.h
+usr/lib/libxcb-xinerama.a
+usr/lib/libxcb-xinerama.so
+usr/lib/libxcb-xinerama.la
+usr/lib/pkgconfig/xcb-xinerama.pc

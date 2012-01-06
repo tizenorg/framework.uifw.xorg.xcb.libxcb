@@ -1,0 +1,5 @@
+usr/include/xcb/xvmc.h
+usr/lib/libxcb-xvmc.a
+usr/lib/libxcb-xvmc.so
+usr/lib/libxcb-xvmc.la
+usr/lib/pkgconfig/xcb-xvmc.pc
