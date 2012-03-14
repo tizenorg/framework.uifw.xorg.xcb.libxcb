@@ -1,7 +1,7 @@
 Name:       libxcb
 Summary:    A C binding to the X11 protocol
 Version:    1.7
-Release:    0
+Release:    3.3
 Group:      System/Libraries
 License:    MIT
 URL:        http://xcb.freedesktop.org/
