@@ -1,7 +1,7 @@
 Name:       libxcb
 Summary:    A C binding to the X11 protocol
-Version:    1.7
-Release:    3.3
+Version: 1.7
+Release:    0
 Group:      System/Libraries
 License:    MIT
 URL:        http://xcb.freedesktop.org/
@@ -14,7 +14,8 @@ BuildRequires:  pkgconfig(xcb-proto)
 BuildRequires:  pkgconfig(xau)
 BuildRequires:  pkgconfig(xproto)
 BuildRequires:  libxslt
-BuildRequires:  python-xml, python-devel
+BuildRequires:  python
+BuildRequires:  python-xml
 
 
 %description
@@ -26,7 +27,7 @@ Summary:    Development files for %{name}
 Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
 Requires:   libpthread-stubs
-Requires:   libXau-devel
+BuildRequires:  pkgconfig(xau)
 
 %description devel
 Description: %{summary}
@@ -86,4 +87,3 @@ rm -rf %{buildroot}
 %files doc
 %defattr(-,root,root,-)
 %{_datadir}/doc/%{name}
-
