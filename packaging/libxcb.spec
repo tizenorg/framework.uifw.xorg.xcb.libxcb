@@ -6,6 +6,7 @@ Group:      System/Libraries
 License:    MIT
 URL:        http://xcb.freedesktop.org/
 Source0:    http://xcb.freedesktop.org/dist/%{name}-%{version}.tar.gz
+Source1001: packaging/libxcb.manifest 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(xorg-macros)
@@ -46,6 +47,7 @@ Description: %{summary}
 
 
 %build
+cp %{SOURCE1001} .
 
 %reconfigure \
     --disable-build-docs \
@@ -74,16 +76,19 @@ rm -rf %{buildroot}
 
 
 %files
+%manifest libxcb.manifest
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
 
 
 %files devel
+%manifest libxcb.manifest
 %defattr(-,root,root,-)
 %{_includedir}/xcb
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 
 %files doc
+%manifest libxcb.manifest
 %defattr(-,root,root,-)
 %{_datadir}/doc/%{name}
