@@ -94,4 +94,3 @@ rm -rf $RPM_BUILD_ROOT
 #%files doc
 #%defattr(-,root,root,-)
 #%{_datadir}/doc/%{name}
-
