@@ -61,6 +61,8 @@ make %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/share/license
+cp -af COPYING %{buildroot}/usr/share/license/%{name}
 %make_install
 
 rm -f $RPM_BUILD_ROOT/%{_libdir}/libxcb-xprint.so*
@@ -81,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libxcb.so.1*
 %{_libdir}/libxcb-*
+/usr/share/license/%{name}
 
 %files devel
 %defattr(-,root,root,-)
