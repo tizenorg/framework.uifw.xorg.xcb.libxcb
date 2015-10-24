@@ -25,6 +25,10 @@
 
 /* Connection management: the core of XCB. */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -32,6 +36,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "xcb.h"
 #include "xcbint.h"
@@ -62,6 +67,7 @@ typedef struct {
 static const int xcb_con_error = XCB_CONN_ERROR;
 static const int xcb_con_closed_mem_er = XCB_CONN_CLOSED_MEM_INSUFFICIENT;
 static const int xcb_con_closed_parse_er = XCB_CONN_CLOSED_PARSE_ERR;
+static const int xcb_con_closed_screen_er = XCB_CONN_CLOSED_INVALID_SCREEN;
 
 static int set_fd_flags(const int fd)
 {
@@ -204,9 +210,46 @@ static int write_vec(xcb_connection_t *c, struct iovec **vector, int *count)
          i++;
     }
 #else
-    n = writev(c->fd, *vector, *count);
-    if(n < 0 && errno == EAGAIN)
-        return 1;
+    n = *count;
+    if (n > IOV_MAX)
+	n = IOV_MAX;
+
+#if HAVE_SENDMSG
+    if (c->out.out_fd.nfd) {
+        union {
+            struct cmsghdr cmsghdr;
+            char buf[CMSG_SPACE(XCB_MAX_PASS_FD * sizeof(int))];
+        } cmsgbuf;
+        struct msghdr msg = {
+            .msg_name = NULL,
+            .msg_namelen = 0,
+            .msg_iov = *vector,
+            .msg_iovlen = n,
+            .msg_control = cmsgbuf.buf,
+            .msg_controllen = CMSG_LEN(c->out.out_fd.nfd * sizeof (int)),
+        };
+        int i;
+        struct cmsghdr *hdr = CMSG_FIRSTHDR(&msg);
+
+        hdr->cmsg_len = msg.msg_controllen;
+        hdr->cmsg_level = SOL_SOCKET;
+        hdr->cmsg_type = SCM_RIGHTS;
+        memcpy(CMSG_DATA(hdr), c->out.out_fd.fd, c->out.out_fd.nfd * sizeof (int));
+
+        n = sendmsg(c->fd, &msg, 0);
+        if(n < 0 && errno == EAGAIN)
+            return 1;
+        for (i = 0; i < c->out.out_fd.nfd; i++)
+            close(c->out.out_fd.fd[i]);
+        c->out.out_fd.nfd = 0;
+    } else
+#endif
+    {
+        n = writev(c->fd, *vector, n);
+        if(n < 0 && errno == EAGAIN)
+            return 1;
+    }
+
 #endif /* _WIN32 */    
 
     if(n <= 0)
@@ -345,6 +388,10 @@ xcb_connection_t *_xcb_conn_ret_error(int err)
         {
             return (xcb_connection_t *) &xcb_con_closed_parse_er;
         }
+        case XCB_CONN_CLOSED_INVALID_SCREEN:
+        {
+            return (xcb_connection_t *) &xcb_con_closed_screen_er;
+        }
         case XCB_CONN_ERROR:
         default:
         {
@@ -418,15 +465,25 @@ int _xcb_conn_wait(xcb_connection_t *c, pthread_cond_t *cond, struct iovec **vec
 
     if(ret)
     {
+        /* The code allows two threads to call select()/poll() at the same time.
+         * First thread just wants to read, a second thread wants to write, too.
+         * We have to make sure that we don't steal the reading thread's reply
+         * and let it get stuck in select()/poll().
+         * So a thread may read if either:
+         * - There is no other thread that wants to read (the above situation
+         *   did not occur).
+         * - It is the reading thread (above situation occurred).
+         */
+        int may_read = c->in.reading == 1 || !count;
 #if USE_POLL
-        if((fd.revents & POLLIN) == POLLIN)
+        if(may_read && (fd.revents & POLLIN) != 0)
 #else
-        if(FD_ISSET(c->fd, &rfds))
+        if(may_read && FD_ISSET(c->fd, &rfds))
 #endif
             ret = ret && _xcb_in_read(c);
 
 #if USE_POLL
-        if((fd.revents & POLLOUT) == POLLOUT)
+        if((fd.revents & POLLOUT) != 0)
 #else
         if(FD_ISSET(c->fd, &wfds))
 #endif

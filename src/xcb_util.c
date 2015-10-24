@@ -25,6 +25,10 @@
 
 /* Utility functions implementable using only public APIs. */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <assert.h>
 #include <sys/types.h>
 #include <limits.h>
@@ -51,7 +55,6 @@
 #include "xcbext.h"
 #include "xcbint.h"
 
-/* must be after "xcbint.h" to get autoconf #defines */
 #if defined(HAVE_TSOL_LABEL_H) && defined(HAVE_IS_SYSTEM_LABELED)
 # include <tsol/label.h>
 # include <sys/stat.h>
@@ -165,7 +168,11 @@ static int _xcb_open_abstract(char *protocol, const char *file, size_t filelen);
 static int _xcb_open(const char *host, char *protocol, const int display)
 {
     int fd;
+#ifdef __hpux
+    static const char unix_base[] = "/usr/spool/sockets/X11/";
+#else
     static const char unix_base[] = "/tmp/.X11-unix/X";
+#endif
     const char *base = unix_base;
     size_t filelen;
     char *file = NULL;
@@ -175,7 +182,7 @@ static int _xcb_open(const char *host, char *protocol, const int display)
     if(strncmp(host, "/tmp/launch", 11) == 0) {
         base = host;
         host = "";
-        protocol = NULL;
+        protocol = "unix";
     }
 #endif
 
@@ -463,6 +470,16 @@ xcb_connection_t *xcb_connect_to_display_with_auth_info(const char *displayname,
     }
     else
         c = xcb_connect_to_fd(fd, 0);
+
+    if(c->has_error)
+        goto out;
+
+    /* Make sure requested screen number is in bounds for this server */
+    if((screenp != NULL) && (*screenp >= (int) c->setup->roots_len)) {
+        xcb_disconnect(c);
+        c = _xcb_conn_ret_error(XCB_CONN_CLOSED_INVALID_SCREEN);
+        goto out;
+    }
 
 out:
     free(host);

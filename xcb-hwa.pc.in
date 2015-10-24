@@ -1,0 +1,21 @@
+prefix=@prefix@
+ 
+exec_prefix=@exec_prefix@
+ 
+libdir=@libdir@
+ 
+includedir=@includedir@
+ 
+  
+ 
+Name: XCB HWA
+ 
+Description: XCB HWA Extension
+ 
+Version: @PACKAGE_VERSION@
+ 
+Requires: xcb
+ 
+Libs: -L${libdir} -lxcb-hwa
+ 
+Cflags: -I${includedir}

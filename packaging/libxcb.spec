@@ -1,6 +1,6 @@
 Name:    libxcb
 Summary: A C binding to the X11 protocol
-Version: 1.8.1
+Version: 1.10.0
 Release: 1
 Group:   System/Libraries
 License: MIT
@@ -11,7 +11,7 @@ BuildRequires:  xorg-x11-xutils-dev
 BuildRequires:  libpthread-stubs
 BuildRequires:  libXau-devel
 BuildRequires:  pkgconfig(xproto)
-BuildRequires:  xcb-proto >= 1.6
+BuildRequires:  xcb-proto >= 1.10
 BuildRequires:  libxslt
 BuildRequires:  python
 BuildRequires:  python-xml

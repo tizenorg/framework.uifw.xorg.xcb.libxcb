@@ -25,6 +25,10 @@
 
 /* A generic implementation of a list of void-pointers. */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 
 #include "xcb.h"
@@ -43,7 +47,7 @@ struct _xcb_map {
 
 /* Private interface */
 
-_xcb_map *_xcb_map_new()
+_xcb_map *_xcb_map_new(void)
 {
     _xcb_map *list;
     list = malloc(sizeof(_xcb_map));

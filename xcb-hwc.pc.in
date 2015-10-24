@@ -1,0 +1,21 @@
+prefix=@prefix@
+
+exec_prefix=@exec_prefix@
+
+libdir=@libdir@
+
+includedir=@includedir@
+
+
+
+Name: XCB HWC
+
+Description: XCB HWC Extension
+
+Version: @PACKAGE_VERSION@
+
+Requires: xcb
+
+Libs: -L${libdir} -lxcb-hwc
+
+Cflags: -I${includedir}

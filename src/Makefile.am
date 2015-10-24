@@ -56,6 +56,22 @@ libxcb_dri2_la_LIBADD = $(XCB_LIBS)
 nodist_libxcb_dri2_la_SOURCES = dri2.c dri2.h
 endif
 
+EXTSOURCES += dri3.c
+if BUILD_DRI3
+lib_LTLIBRARIES += libxcb-dri3.la
+libxcb_dri3_la_LDFLAGS = -version-info 0:0:0 -no-undefined @lt_enable_auto_import@
+libxcb_dri3_la_LIBADD = $(XCB_LIBS)
+nodist_libxcb_dri3_la_SOURCES = dri3.c dri3.h
+endif
+
+EXTSOURCES += present.c
+if BUILD_PRESENT
+lib_LTLIBRARIES += libxcb-present.la
+libxcb_present_la_LDFLAGS = -version-info 0:0:0 -no-undefined @lt_enable_auto_import@
+libxcb_present_la_LIBADD = $(XCB_LIBS)
+nodist_libxcb_present_la_SOURCES = present.c present.h
+endif
+
 EXTSOURCES += glx.c
 if BUILD_GLX
 lib_LTLIBRARIES += libxcb-glx.la
@@ -123,7 +139,7 @@ endif
 EXTSOURCES += sync.c
 if BUILD_SYNC
 lib_LTLIBRARIES += libxcb-sync.la
-libxcb_sync_la_LDFLAGS = -version-info 0:0:0 -no-undefined @lt_enable_auto_import@
+libxcb_sync_la_LDFLAGS = -version-info 1:0:0 -no-undefined @lt_enable_auto_import@
 libxcb_sync_la_LIBADD = $(XCB_LIBS)
 nodist_libxcb_sync_la_SOURCES = sync.c sync.h
 endif
@@ -163,7 +179,7 @@ endif
 EXTSOURCES += xinput.c
 if BUILD_XINPUT
 lib_LTLIBRARIES += libxcb-xinput.la
-libxcb_xinput_la_LDFLAGS = -version-info 0:0:0 -no-undefined @lt_enable_auto_import@
+libxcb_xinput_la_LDFLAGS = -version-info 1:0:1 -no-undefined @lt_enable_auto_import@
 libxcb_xinput_la_LIBADD = $(XCB_LIBS)
 nodist_libxcb_xinput_la_SOURCES = xinput.c xinput.h
 endif
@@ -171,7 +187,7 @@ endif
 EXTSOURCES += xkb.c
 if BUILD_XKB
 lib_LTLIBRARIES += libxcb-xkb.la
-libxcb_xkb_la_LDFLAGS = -version-info 0:0:0 -no-undefined
+libxcb_xkb_la_LDFLAGS = -version-info 1:0:0 -no-undefined
 libxcb_xkb_la_LIBADD = $(XCB_LIBS)
 nodist_libxcb_xkb_la_SOURCES = xkb.c xkb.h
 endif
@@ -216,6 +232,21 @@ libxcb_xvmc_la_LIBADD = $(XCB_LIBS)
 nodist_libxcb_xvmc_la_SOURCES = xvmc.c xvmc.h
 endif
 
+EXTSOURCES += hwa.c
+if BUILD_HWA
+lib_LTLIBRARIES += libxcb-hwa.la
+libxcb_hwa_la_LDFLAGS = -version-info 0:1:0 -no-undefined @lt_enable_auto_import@
+libxcb_hwa_la_LIBADD = $(XCB_LIBS)
+nodist_libxcb_hwa_la_SOURCES = hwa.c hwa.h
+endif
+
+EXTSOURCES += hwc.c
+if BUILD_HWC
+lib_LTLIBRARIES += libxcb-hwc.la
+libxcb_hwc_la_LDFLAGS = -version-info 0:1:0 -no-undefined @lt_enable_auto_import@
+libxcb_hwc_la_LIBADD = $(XCB_LIBS)
+nodist_libxcb_hwc_la_SOURCES = hwc.c hwc.h
+endif
 
 EXTHEADERS=$(EXTSOURCES:.c=.h)
 xcbinclude_HEADERS = xcb.h xcbext.h
@@ -225,8 +256,15 @@ endif
 nodist_xcbinclude_HEADERS = $(EXTHEADERS)
 noinst_HEADERS = xcbint.h
 
-BUILT_SOURCES = $(EXTSOURCES)
-CLEANFILES = $(EXTSOURCES) $(EXTHEADERS)
+STATIC_MANS = man/xcb-examples.3 man/xcb-requests.3
+BUILT_MANS = man/xcb_*.3
+man_MANS = $(STATIC_MANS) $(BUILT_MANS)
+EXTRA_DIST = $(STATIC_MANS)
 
-$(EXTSOURCES): c_client.py
+BUILT_SOURCES = $(EXTSOURCES) $(BUILT_MANS)
+CLEANFILES = $(EXTSOURCES) $(EXTHEADERS) $(BUILT_MANS)
+
+$(EXTSOURCES): c_client.py $(XCBPROTO_XCBINCLUDEDIR)/$(@:.c=.xml)
 	$(PYTHON) $(srcdir)/c_client.py -p $(XCBPROTO_XCBPYTHONDIR) $(XCBPROTO_XCBINCLUDEDIR)/$(@:.c=.xml)
+
+$(man_MANS): $(EXTSOURCES)
